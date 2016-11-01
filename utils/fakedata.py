@@ -30,7 +30,7 @@ def main(args):
         initial_state = np.zeros(args.hidden_size)
         seq = rnn_sequence(ws_in, ws_out, ws_h, initial_state)
         for t in range(args.seq_length):
-            print("{} {} {}".format(t, u, next(seq)))
+            print("{} {} {}".format(u, next(seq), t))
 
 
 def _parse_args():
