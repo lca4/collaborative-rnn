@@ -26,6 +26,8 @@ class CollabRNN(object):
                                           shape=[batch_size, subseq_len])
         self._targets = tf.placeholder(tf.int32, name="targets",
                                        shape=[batch_size, subseq_len])
+        self._sequence_length = tf.placeholder(tf.int32, name="sequence_length",
+                                       shape=[batch_size])
 
         # RNN cell.
         cell = tf.nn.rnn_cell.GRUCell(hidden_size)
@@ -51,7 +53,8 @@ class CollabRNN(object):
         inputs = [tf.squeeze(input_, [1]) 
                   for input_ in tf.split(1, subseq_len, inputs)]
         outputs, state = tf.nn.rnn(cell, inputs,
-                initial_state=self._initial_state)
+                initial_state=self._initial_state,
+                sequence_length=self._sequence_length)
         self._final_state = state
 
         # Ops to assign user matrices to the RNN and back.
@@ -145,6 +148,10 @@ class CollabRNN(object):
     def user_id(self):
         return self._user_id
 
+    @property
+    def sequence_length(self):
+        return self._sequence_length
+
 
 def run_epoch(session, model, iterator, user_id, eval_op, verbose=False):
     """Runs the model on the given data."""
@@ -155,11 +162,12 @@ def run_epoch(session, model, iterator, user_id, eval_op, verbose=False):
     state = session.run(model.initial_state)
     session.run([model.assign_to_cell1, model.assign_to_cell2],
                 feed_dict={model.user_id: user_id})
-    for step, (x, y) in enumerate(iterator):
+    for step, (x, y, v) in enumerate(iterator):
         fetches = [model.cost, model.final_state, eval_op]
         feed_dict = {}
         feed_dict[model.input_data] = x
         feed_dict[model.targets] = y
+        feed_dict[model.sequence_length] = v
         # Update initial state for next subsequence.
         h = model.initial_state
         feed_dict[h] = state
