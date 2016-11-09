@@ -23,31 +23,13 @@ class Dataset(object):
     def nb_items(self):
         return self._nb_items
 
-    def iterate(self, uid, batch_size, subseq_len):
+    def iterate(self, uid, subseq_len):
         seq = np.asarray(self._seq_dict[uid])
-        # The final array will have:
-        # - nb rows: batch_size
-        # - nb cols: k * subseq_len + 1
-        n = len(seq)
-        k = max(1, int(ceil((n - batch_size) / (batch_size * subseq_len))))
-        nb_cols = k * subseq_len + 1
-        data = np.zeros(batch_size * nb_cols, dtype=int)
-        data[:n] = seq
-        data = data.reshape((batch_size, nb_cols))
-        # The sequence_length array will be of shape (batch_size, k)
-        valid = np.zeros(batch_size * k, dtype=int)
-        s = int((n - (n / nb_cols)) / subseq_len)
-        valid[:s] = subseq_len
-        rem = ((n - (n / nb_cols))) % subseq_len
-        if rem > 0:
-            valid[s] = rem
-        valid = valid.reshape((batch_size, k))
-        offset = 0
-        for i in range(k):
-            inputs = data[:, offset:(offset+subseq_len)]
-            targets = data[:, (offset+1):(offset+subseq_len+1)]
-            yield (inputs, targets, valid[:,i])
-            offset += subseq_len
+        for i in range(0, len(seq) - 1, subseq_len):
+            targets = seq[np.newaxis,i+1:i+1+subseq_len]
+            n = targets.shape[1]
+            inputs = seq[np.newaxis,i:i+n]
+            yield (inputs, targets)
 
     @classmethod
     def from_path(cls, path):

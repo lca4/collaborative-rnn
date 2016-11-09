@@ -23,9 +23,9 @@ class CollabRNN(object):
         # placeholders for input data
         self._user_id = tf.placeholder(tf.int32, name="user_id", shape=[])
         self._input_data = tf.placeholder(tf.int32, name="input_data",
-                                          shape=[batch_size, subseq_len])
+                                          shape=[batch_size, None])
         self._targets = tf.placeholder(tf.int32, name="targets",
-                                       shape=[batch_size, subseq_len])
+                                       shape=[batch_size, None])
         self._sequence_length = tf.placeholder(tf.int32, name="sequence_length",
                                        shape=[batch_size])
 
@@ -50,11 +50,10 @@ class CollabRNN(object):
         # RNN (with dropout if training).
         if is_training:
             inputs = tf.nn.dropout(inputs, ikp)
-        inputs = [tf.squeeze(input_, [1]) 
-                  for input_ in tf.split(1, subseq_len, inputs)]
-        outputs, state = tf.nn.rnn(cell, inputs,
-                initial_state=self._initial_state,
-                sequence_length=self._sequence_length)
+        #inputs = [tf.squeeze(input_, [1]) 
+        #          for input_ in tf.split(1, subseq_len, inputs)]
+        outputs, state = tf.nn.dynamic_rnn(cell, inputs,
+                initial_state=self._initial_state)
         self._final_state = state
 
         # Ops to assign user matrices to the RNN and back.
@@ -74,18 +73,20 @@ class CollabRNN(object):
                     .assign(var[hidden_size:]))
 
         # Output layer.
+        # `output` has shape (batch_size * subseq_len, hidden_size).
         output = tf.reshape(tf.concat(1, outputs), [-1, hidden_size])
         with tf.variable_scope("output"):
             ws = tf.get_variable("weights", [hidden_size, nb_items],
                                  dtype=tf.float32)
             bs = tf.get_variable("bias", [nb_items], dtype=tf.float32)
+        # `logits` has shape (batch_size * subseq_len, nb_items).
         logits = tf.matmul(output, ws) + bs
 
         # Loss function.
         loss = tf.nn.seq2seq.sequence_loss_by_example(
             [logits],
             [tf.reshape(self._targets, [-1])],
-            [tf.ones([batch_size * subseq_len], dtype=tf.float32)])
+            [tf.ones([batch_size * tf.shape(self._input_data)[1]], dtype=tf.float32)])
         self._cost = tf.reduce_sum(loss) / batch_size
 
         if not is_training:
@@ -162,12 +163,11 @@ def run_epoch(session, model, iterator, user_id, eval_op, verbose=False):
     state = session.run(model.initial_state)
     session.run([model.assign_to_cell1, model.assign_to_cell2],
                 feed_dict={model.user_id: user_id})
-    for step, (x, y, v) in enumerate(iterator):
+    for step, (x, y) in enumerate(iterator):
         fetches = [model.cost, model.final_state, eval_op]
         feed_dict = {}
         feed_dict[model.input_data] = x
         feed_dict[model.targets] = y
-        feed_dict[model.sequence_length] = v
         # Update initial state for next subsequence.
         h = model.initial_state
         feed_dict[h] = state
@@ -225,10 +225,10 @@ def main(args):
             train_err = 0
             valid_err = 0
             for u in np.random.permutation(nb_users):
-                train_iter = train_data.iterate(u, 1, args.subseq_len)
+                train_iter = train_data.iterate(u, args.subseq_len)
                 train_err += run_epoch(session, train_model, train_iter, u,
                                        train_model.train_op, verbose=True)
-                valid_iter = valid_data.iterate(u, 1, 1)
+                valid_iter = valid_data.iterate(u, 1)
                 valid_err += run_epoch(session, valid_model, valid_iter, u,
                                        tf.no_op())
             train_err /= nb_users
