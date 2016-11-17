@@ -114,8 +114,8 @@ def preprocess(stream, output_dir, prefix="processed", min_entropy=0.0):
     # the training sequences.
     items = set(itertools.chain(*train.values()))
     users = set(train.keys())
-    user2id = dict(zip(users, range(len(users))))
-    item2id = dict(zip(items, range(len(items))))
+    user2id = dict(zip(users, range(1, len(users) + 1)))
+    item2id = dict(zip(items, range(1, len(items) + 1)))
     train2 = dict()
     valid2 = dict()
     for user in users:
@@ -127,7 +127,7 @@ def preprocess(stream, output_dir, prefix="processed", min_entropy=0.0):
     valid_path = os.path.join(output_dir, "{}-valid.txt".format(prefix))
     with open(train_path, "w") as tf, open(valid_path, "w") as vf:
         for uid in user2id.values():
-            t = 0
+            t = 1
             for iid in train2[uid]:
                 tf.write("{} {} {}\n".format(uid, iid, t))
                 t += 1
