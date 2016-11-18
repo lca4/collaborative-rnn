@@ -18,7 +18,7 @@ def rnn_sequence(ws_in, ws_out, ws_h, initial_state):
     while True:
         probs = softmax(np.dot(state, ws_out))
         event = np.random.choice(nb_items, p=probs)
-        yield event
+        yield event + 1
         state = np.tanh(np.dot(state, ws_h) + ws_in[event])
 
 
@@ -28,14 +28,14 @@ def main(args):
     train_path = "{}-train.txt".format(args.prefix)
     valid_path = "{}-valid.txt".format(args.prefix)
     with open(train_path, "w") as tf, open(valid_path, "w") as vf:
-        for u in range(args.nb_users):
+        for u in range(1, args.nb_users + 1):
             ws_h = np.random.randn(args.hidden_size, args.hidden_size)
             initial_state = np.zeros(args.hidden_size)
             seq = rnn_sequence(ws_in, ws_out, ws_h, initial_state)
-            for t in range(args.train_seq_length):
+            for t in range(1, args.train_seq_length + 1):
                 tf.write("{} {} {}\n".format(u, next(seq), t))
             offset = args.train_seq_length
-            for t in range(args.valid_seq_length):
+            for t in range(1, args.valid_seq_length + 1):
                 vf.write("{} {} {}\n".format(u, next(seq), offset + t))
 
 
