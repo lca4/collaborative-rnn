@@ -62,9 +62,9 @@ in the paper. All the setting can be passed as command line arguments to
 | `--num-epochs`       | 25         | 10      |
 | `--rho`              | 0.997      | 0.997   |
 
-On a modern server with a TITAN X GPU it takes us around 40 seconds per epoch
-for the BrightKite dataset, and around 14 minutes per epoch on the last.fm
-dataset.
+On a modern server with an Nvidia Titan X (Maxwell generation) GPU it takes
+around 40 seconds per epoch for the BrightKite dataset, and around 14 minutes
+per epoch on the last.fm dataset.
 
 [1]: http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/lastfm-1K.html
 [2]: https://snap.stanford.edu/data/loc-brightkite.html
