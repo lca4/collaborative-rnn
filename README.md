@@ -13,14 +13,19 @@ A PDF of the paper can be found
 
 The code is tested with
 
-- Python 2.7.6
+- Python 2.7
 - NumPy 1.11.2
-- TensorFlow 0.11.0 RC2
+- TensorFlow 0.11.0
 - CUDA 8.0
 - cuDNN 5.1
 
-We plan to publish step-by-step instructions on how to run the code on an AWS
-`p2.xlarge` instance. Stay tuned!
+Note: our code does *not* work with previous versions of TensorFlow, due to
+[this bug](https://github.com/tensorflow/tensorflow/issues/3797) which is fixed
+only starting from version 0.11.
+
+If you are interested in quickly testing out our code, you might want to **check
+out our [step-by-step guide][1]** for running the collaborative RNN on an AWS
+EC2 p2.xlarge instance.
 
 ## Quickstart
 
@@ -28,9 +33,9 @@ Reproducing the results of the paper should be as easy as following these three
 steps.
 
 1. Download the datasets.
-    - The last.fm dataset is available on [Òscar Celma's page][1]. The relevant
+    - The last.fm dataset is available on [Òscar Celma's page][2]. The relevant
       file is `userid-timestamp-artid-artname-traid-traname.tsv`.
-    - The BrighKite dataset is available at [SNAP][2]. The relevant file is
+    - The BrighKite dataset is available at [SNAP][3]. The relevant file is
       `loc-brightkite_totalCheckins.txt`.
 2. Preprocess the data (relabel user and items, remove degenerate cases, split
    into training and validation sets). This can be done using the script
@@ -66,5 +71,6 @@ On a modern server with an Nvidia Titan X (Maxwell generation) GPU it takes
 around 40 seconds per epoch for the BrightKite dataset, and around 14 minutes
 per epoch on the last.fm dataset.
 
-[1]: http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/lastfm-1K.html
-[2]: https://snap.stanford.edu/data/loc-brightkite.html
+[1]: docs/running-on-aws.md
+[2]: http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/lastfm-1K.html
+[3]: https://snap.stanford.edu/data/loc-brightkite.html
