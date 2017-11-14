@@ -23,23 +23,24 @@ packages that we need.
 
     sudo apt-get update
     sudo apt-get upgrade
-    sudo apt-get install python-pip python-numpy python-scipy libopenblas-dev 
+    sudo apt-get install python-pip python-numpy python-scipy \
+        libopenblas-dev libcupti-dev
 
 Second, we install CUDA 8.0. It is publicly available on [Nvidia's website][2].
 
-    wget https://developer.nvidia.com/compute/cuda/8.0/prod/local_installers/cuda-repo-ubuntu1604-8-0-local_8.0.44-1_amd64-deb
-    sudo dpkg -i cuda-repo-ubuntu1604-8-0-local_8.0.44-1_amd64-deb
+    wget https://developer.nvidia.com/compute/cuda/8.0/Prod2/local_installers/cuda-repo-ubuntu1604-8-0-local-ga2_8.0.61-1_amd64-deb
+    sudo dpkg -i cuda-repo-ubuntu1604-8-0-local-ga2_8.0.61-1_amd64-deb
     sudo apt-get update
     sudo apt-get install cuda
 
-Third, we install cuDNN, another library provided by Nvidia. Unfortunately,
+Third, we install cuDNN 6.0, another library provided by Nvidia. Unfortunately,
 this one is only accessible for registered members of [Nvidia's developers
-program][3]. However, this program is free, and creating an account takes only a
-couple of minutes. Once you are a member, you can find cuDNN [here][4].
+program][3]. However, this program is free, and creating an account takes only
+a couple of minutes. Once you are a member, you can find cuDNN [here][4].
 Download it, and copy it to the EC2 instance. Then, execute the following
 commands.
 
-    tar xvf cudnn-8.0-linux-x64-v5.1.tgz 
+    tar xvf cudnn-8.0-linux-x64-v6.0.tgz
     sudo cp cuda/include/cudnn.h /usr/local/cuda/include/
     sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64/
 
@@ -47,12 +48,11 @@ We also need to modify an environment variable so that other software can pick
 up where cuDNN is installed. In `~/.bashrc`, add the following line at the end
 of the file.
 
-    export LD_LIBRARY_PATH=/opt/intel:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 Then, reload the file using `source ~/.bashrc`. Lastly, we install TensorFlow.
 
-    export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow-0.11.0-cp27-none-linux_x86_64.whl
-    sudo pip install tensorflow
+    sudo pip install tensorflow-gpu==1.4.0
 
 
 ## Running the collaborative RNN
