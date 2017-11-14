@@ -32,17 +32,18 @@ class CollaborativeRNN(object):
         self._initial_state = cell.zero_state(batch_size, tf.float32)
 
         inputs = [tf.squeeze(input_, [1]) for input_
-                in tf.split(1, chunk_size, self._inputs)]
-        states, _ = tf.nn.rnn(cell, inputs,
+                in tf.split(self._inputs, chunk_size, axis=1)]
+        states, _ = tf.nn.static_rnn(cell, inputs,
                 initial_state=self._initial_state)
 
         # Compute the final state for each element of the batch.
         self._final_state = tf.gather_nd([self._initial_state] + states,
-                tf.transpose(tf.pack([self._seq_length, tf.range(batch_size)])))
+                tf.transpose(tf.stack(
+                        [self._seq_length, tf.range(batch_size)])))
 
         # Output layer.
         # `output` has shape (batch_size * chunk_size, hidden_size).
-        output = tf.reshape(tf.concat(1, states), [-1, hidden_size])
+        output = tf.reshape(tf.concat(states, axis=1), [-1, hidden_size])
         with tf.variable_scope("output"):
             ws = tf.get_variable("weights", [hidden_size, num_items + 1],
                                  dtype=tf.float32)
@@ -50,11 +51,12 @@ class CollaborativeRNN(object):
         logits = tf.matmul(output, ws)
         targets = tf.reshape(self._targets, [-1])
 
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, targets)
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+                labels=targets, logits=logits)
 
         masked = loss * tf.to_float(tf.sign(targets))
         masked = tf.reshape(masked, [batch_size, chunk_size])
-        self._cost = tf.reduce_sum(masked, reduction_indices=1)
+        self._cost = tf.reduce_sum(masked, axis=1)
 
         if not is_training:
             self._train_op = tf.no_op()
@@ -199,7 +201,7 @@ def main(args):
         with tf.variable_scope("model", reuse=True, initializer=initializer):
             valid_model = CollaborativeRNN(num_users, num_items,
                     is_training=False, **settings)
-        tf.initialize_all_variables().run()
+        tf.global_variables_initializer().run()
         session.run(train_model.rms_reset)
         for i in range(1, args.num_epochs + 1):
             order = np.random.permutation(train_data.num_batches)

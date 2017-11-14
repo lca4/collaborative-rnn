@@ -38,9 +38,9 @@ class CollaborativeGRUCell(tf.nn.rnn_cell.RNNCell):
                             dtype=tf.float32)
                     # shape(w_input_i) = [batch_size, 2 * num_units]
                     w_input_i = tf.nn.embedding_lookup(items, inputs[:,1])
-                res = tf.batch_matmul(tf.expand_dims(state, 1), w_hidden_u)
+                res = tf.matmul(tf.expand_dims(state, 1), w_hidden_u)
                 res = tf.sigmoid(tf.squeeze(res, [1]) + w_input_i)
-                r, z = tf.split(1, 2, res)
+                r, z = tf.split(value=res, num_or_size_splits=2, axis=1)
             with tf.variable_scope("Candidate"):
                 with tf.device("/cpu:0"):
                     users = tf.get_variable("users",
@@ -53,7 +53,7 @@ class CollaborativeGRUCell(tf.nn.rnn_cell.RNNCell):
                             dtype=tf.float32)
                     # shape(w_input_i) = [batch_size, num_units]
                     w_input_i = tf.nn.embedding_lookup(items, inputs[:,1])
-                res = tf.batch_matmul(tf.expand_dims(r * state, 1), w_hidden_u)
+                res = tf.matmul(tf.expand_dims(r * state, 1), w_hidden_u)
                 c = tf.sigmoid(tf.squeeze(res, [1]) + w_input_i)
             new_h = z * state + (1 - z) * c
         return new_h, new_h
