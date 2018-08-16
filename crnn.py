@@ -2,8 +2,8 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import itertools
 import numpy as np
+import six.moves
 import tensorflow as tf
 import time
 
@@ -143,7 +143,7 @@ def run_epoch(session, train_model, valid_model, train_iter, valid_iter,
 
     next_tenth = tot_size / 10
 
-    for train, valid in itertools.izip(train_iter, valid_iter):
+    for train, valid in six.moves.zip(train_iter, valid_iter):
         state = session.run(train_model.initial_state)
         # Training data.
         errors, num_triplets, state = run_batch(
@@ -243,6 +243,6 @@ if __name__ == "__main__":
     args = _parse_args()
     if args.verbose:
         print("arguments:")
-        for key, val in vars(args).iteritems():
+        for key, val in vars(args).items():
             print("{: <18} {}".format(key, val))
     main(args)

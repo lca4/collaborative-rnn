@@ -13,11 +13,12 @@ A PDF of the paper can be found
 
 The code is tested with
 
-- Python 2.7.12
+- Python 2.7.12 and 3.5.1
 - NumPy 1.13.3
 - TensorFlow 1.4.0
 - CUDA 8.0
 - cuDNN 6.0
+- six 1.11.0
 
 If you are interested in quickly testing out our code, you might want to **check
 out our [step-by-step guide][1]** for running the collaborative RNN on an AWS

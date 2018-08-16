@@ -101,7 +101,7 @@ def preprocess(stream, output_dir, prefix="processed", min_entropy=0.0):
         hist = collections.defaultdict(lambda: 0)
         for item in seq:
             hist[item] += 1
-        if entropy(hist.values()) <= min_entropy:
+        if entropy(list(hist.values())) <= min_entropy:
             continue
         # Implementation note: round(0.025 * 100) gives 3.0 in Python, but 2.0
         # in Julia. Beware! Results might differ!

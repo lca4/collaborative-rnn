@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import collections
 import numpy as np
+import six
 
 from math import ceil
 
@@ -47,7 +48,7 @@ class Dataset(object):
         return self._seq_dict[u]
 
     def __iter__(self):
-        return self._seq_dict.iteritems()
+        return six.iteritems(self._seq_dict)
 
     def truncate_seqs(self, max_size, keep_first=False):
         for user in self._seq_dict.keys():
@@ -104,7 +105,7 @@ class Dataset(object):
     @staticmethod
     def _assign_users_to_batches(batch_size, seq_dict):
         lengths, users = zip(*sorted(((len(seq), u)
-                for u, seq in seq_dict.iteritems()), reverse=True))
+                for u, seq in six.iteritems(seq_dict)), reverse=True))
         return tuple(users[i:i+batch_size]
                 for i in range(0, len(users), batch_size))
 
